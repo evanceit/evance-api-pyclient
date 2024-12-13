@@ -1,5 +1,8 @@
 import json
 
+from evance_api.pagination import Pagination, Links
+
+
 class APIResponse:
     def __init__(self, data):
         """
@@ -7,11 +10,19 @@ class APIResponse:
 
         :param data: The raw JSON response from the API
         """
-        self.success = data.get("success", False)
-        self.status = data.get("status", None)
-        self.pagination = data.get("pagination", {})
-        self.links = data.get("links", {})
-        self.data = [self._parse_item(item) for item in data.get("data", [])]
+        self._success = data.get("success", False)
+        self._status = data.get("status", None)
+        self._pagination = data.get("pagination", {})
+        self._links = data.get("links", {})
+        #self.data = [self._parse_item(item) for item in data.get("data", [])]
+
+        raw_data = data.get("data", [])
+        if isinstance(raw_data, list):
+            self.data = [self._parse_item(item) for item in raw_data]
+        elif isinstance(raw_data, dict):  # Handle a single dictionary item
+            self.data = self._parse_item(raw_data)
+        else:
+            self.data = None  # `data` is neither a list nor a dictionary
 
     def _parse_item(self, item):
         """
@@ -51,25 +62,51 @@ class APIResponse:
         """
         Convert the response object back to JSON.
         """
-        return json.dumps({
-            "success": self.success,
-            "status": self.status,
-            "data": [item.to_dict() for item in self.data],
-            "pagination": self.pagination,
-            "links": self.links
-        })
+        if isinstance(self.data, list):
+            # Data is a list of parsed items
+            json_data = [item.to_dict() for item in self.data]
+        elif self.data is not None:
+            # Data is a single parsed item
+            json_data = self.data.to_dict()
+        else:
+            # Data is empty or None
+            json_data = None
 
-    def get_pagination(self):
-        """
-        Retrieve pagination details.
-        """
-        return self.pagination
+        return json.dumps(json_data)
 
-    def get_links(self):
+    @property
+    def success(self):
         """
-        Retrieve navigation links.
+        Return the 'success' flag from the response.
         """
-        return self.links
+        return self._success
+
+    @property
+    def status(self):
+        """
+        Return the 'status' field from the response.
+        """
+        return self._status
+
+    @property
+    def pagination(self):
+        """
+        Returns the pagination information as a `Pagination` object.
+        """
+        if not hasattr(self, "_pagination_object"):
+            # Convert the raw dictionary to a `Pagination` object
+            self._pagination_object = Pagination(self._pagination)
+        return self._pagination_object
+
+    @property
+    def links(self):
+        """
+        Returns the links as a `Links` object.
+        """
+        if not hasattr(self, "_links_object"):
+            # Convert the raw dictionary to a `Links` object
+            self._links_object = Links(self._links)
+        return self._links_object
 
     def __getitem__(self, key):
         """
@@ -98,7 +135,13 @@ class APIResponse:
         return f"APIResponse({self.data})"
 
 class Resources:
-    def __init__(self, client, resource_name, accepted_params=None):
+    def __init__(
+            self,
+            client,
+            resource_name,
+            accepted_params=None,
+            body_validator=None
+    ):
         """
         Initialize the base Resource class.
 
@@ -113,6 +156,7 @@ class Resources:
         self.client = client
         self.resource_name = resource_name
         self.accepted_params = accepted_params or {}
+        self.body_validator = body_validator
         self.query_params = {}  # Store query parameters dynamically
 
         self.accepted_params.update(default_params)
@@ -145,4 +189,38 @@ class Resources:
         :param resource_id: The ID of the resource
         """
         response = self.client.get(f"{self.resource_name}/{resource_id}.json")
+        return APIResponse(response)
+
+    def add(self, body) -> APIResponse:
+        """
+        Add a new resource (POST).
+
+        :param body: Dictionary representing the JSON body for the POST request
+        """
+        if self.body_validator:
+            self.body_validator.validate(body)  # Validate structure of JSON body
+
+        response = self.client.post(f"{self.resource_name}.json", json=body)
+
+        return APIResponse(response)
+
+    def update(self, resource_id, body) -> APIResponse:
+        """
+        Update an existing resource (PUT).
+
+        :param resource_id: The ID of the resource to update
+        :param body: Dictionary representing the JSON body for the PUT request
+        """
+        if self.body_validator:
+            self.body_validator.validate(body)  # Validate structure of JSON body
+        response = self.client.put(f"{self.resource_name}/{resource_id}.json", json=body)
+        return APIResponse(response)
+
+    def delete(self, resource_id) -> APIResponse:
+        """
+        Delete a resource (DELETE).
+
+        :param resource_id: The ID of the resource to delete
+        """
+        response = self.client.delete(f"{self.resource_name}/{resource_id}.json")
         return APIResponse(response)

@@ -17,11 +17,12 @@ product.set("limit",5)
 product.set("page", 2)
 
 response = product.list()
+#print(response.to_json())
 
 # Access metadata
 print(response.success)  # True
 print(response.status)   # 200
-print(response.pagination)  # {'page': 1, 'limit': 100, 'total': 77, 'totalPages': 1}
+print(response.pagination.page)  # {'page': 1, 'limit': 100, 'total': 77, 'totalPages': 1}
 
 # Iterate over the data items
 for data in response:
@@ -33,7 +34,7 @@ response_json = response.to_json()
 print(response_json)
 
 # Work with pagination
-next_link = response.get_links().get("previous")
+next_link = response.links.next
 if next_link:
     print(f"Next page link: {next_link}")
 
@@ -55,6 +56,6 @@ response_json = response.to_json()
 #print(response_json)
 
 # Work with pagination
-next_link = response.get_links().get("previous")
+next_link = response.links.previous
 if next_link:
     print(f"Next page link: {next_link}")

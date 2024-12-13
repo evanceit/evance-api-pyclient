@@ -10,6 +10,10 @@ class UnauthorizedError(EvanceException):
     """Exception for 401 Unauthorized errors."""
     default_message = "Invalid credentials or token expired."
 
+class UnprocessableError(EvanceException):
+    """Exception for 422 Unauthorized errors."""
+    default_message = "Unprocessable Content."
+
 class ForbiddenError(EvanceException):
     """Exception for 403 Forbidden errors."""
     default_message = "Access to this resource is forbidden."
