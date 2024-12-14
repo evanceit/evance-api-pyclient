@@ -134,6 +134,9 @@ class APIResponse:
         """
         return f"APIResponse({self.data})"
 
+
+from evance_api.requests import QueryParams, RequestBody
+
 class Resources:
     def __init__(
             self,
@@ -157,7 +160,8 @@ class Resources:
         self.resource_name = resource_name
         self.accepted_params = accepted_params or {}
         self.body_validator = body_validator
-        self.query_params = {}  # Store query parameters dynamically
+        self.query = QueryParams()  # Use the QueryParams class for query parameters
+        self.body = RequestBody()  # Use the RequestBody class for request bodies
 
         self.accepted_params.update(default_params)
 
@@ -178,12 +182,13 @@ class Resources:
     def list(self, params=None) -> APIResponse:
         """
         Retrieve a list of items for this resource.
-        """
-        if params is None:
-            params = {}
+        Query parameters can be set in advance via self.query or passed dynamically.
 
-        query_params = self.query_params.copy()
-        query_params.update(params)
+        :param params: Dictionary of additional parameters to include in the query
+        """
+        query_params = self.query.to_dict()  # Get pre-set query params
+        if params:
+            query_params.update(params)  # Merge with dynamically passed params
 
         response = self.client.get(f"{self.resource_name}.json", params=query_params)
         return APIResponse(response)
@@ -197,28 +202,32 @@ class Resources:
         response = self.client.get(f"{self.resource_name}/{resource_id}.json")
         return APIResponse(response)
 
-    def add(self, body) -> APIResponse:
+    def add(self) -> APIResponse:
         """
         Add a new resource (POST).
+        Request body can be set in advance via self.body.
 
-        :param body: Dictionary representing the JSON body for the POST request
+        :return: APIResponse object
         """
+        body = self.body.to_dict()  # Get request body from self.body
         if self.body_validator:
-            self.body_validator.validate(body)  # Validate structure of JSON body
+            self.body_validator.validate(body)  # Validate structure of the JSON body
 
         response = self.client.post(f"{self.resource_name}.json", json=body)
 
         return APIResponse(response)
 
-    def update(self, resource_id, body) -> APIResponse:
+    def update(self, resource_id) -> APIResponse:
         """
         Update an existing resource (PUT).
+        Request body can be set in advance via self.body.
 
         :param resource_id: The ID of the resource to update
-        :param body: Dictionary representing the JSON body for the PUT request
+        :return: APIResponse object
         """
+        body = self.body.to_dict()  # Get request body from self.body
         if self.body_validator:
-            self.body_validator.validate(body)  # Validate structure of JSON body
+            self.body_validator.validate(body)  # Validate structure of the JSON body
         response = self.client.put(f"{self.resource_name}/{resource_id}.json", json=body)
         return APIResponse(response)
 
