@@ -8,7 +8,9 @@ The **Evance API Python Client** is a library designed to interact with the Evan
 - Supports resource management, including products and contacts
 - Error handling for common HTTP issues (e.g., 401, 403, 404)
 - Pagination and querying for resources
+- Validation for dynamic query parameters
 - Extensible design for additional resources
+- Response parsing with support for JSON handling and dot notation access
 
 ## Installation
 To install the dependencies needed for this project, run:
@@ -19,16 +21,18 @@ pip install -r requirements.txt
 
 ## Usage
 ### Authentication
-Authenticate with the API using a JSON credentials file.
+Authenticate with the API using a JSON credentials file. Use debug mode to disable SSL verification.
 
 ```python
 from evance_api.auth import EvanceAuth
 
-auth = EvanceAuth.from_json("credentials.json")
+# Load credentials from a JSON file
+auth = EvanceAuth.from_json("credentials.json", debug_mode=True)
 auth.authenticate()
 ```
 
 ### Creating the Client
+The API defaults to version 1 at the moment, however it is likely that v1 will not be supported going forward.
 Set up the Evance Client to make API requests:
 
 ```python
@@ -44,13 +48,13 @@ Fetch and iterate through the list of products:
 from evance_api.resources.products import Products
 
 product = Products(client)
-product.set("limit", 10)
+product.set("limit", 5)
 product.set("page", 1)
 
 response = product.list()
 
 for item in response:
-    print(item.title)  # Access product attributes
+    print(item.title)  # Access product attributes via dot notation
 ```
 
 #### Contacts
@@ -59,50 +63,97 @@ Fetch and iterate through the list of contacts:
 from evance_api.resources.contacts import Contacts
 
 contact = Contacts(client)
+contact.set("email", "test@example.com")  # Query based on email address
+```
+It is also possible to pass parameters directly to the `list()` method. Any parameters `set()` will be merged with parameters passed in `list()`
+```
 response = contact.list()
 
-for item in response:
-    print(item.email)  # Access contact attributes
+# Access metadata and data
+print(response.success)        # True
+print(response.pagination)     # Pagination information
+for contact in response:
+    print(contact.email)  # Access attributes via dot notation
 ```
 
 ### Error Handling
-Catch specific exceptions with the built-in error classes:
+Specific exceptions have been implemented to handle common HTTP errors:
 ```python
-from evance_api.exceptions import UnauthorizedError, NotFoundError
+from evance_api.exceptions import UnauthorizedError, ForbiddenError
 
 try:
-    response = client.get("nonexistent_endpoint")
+    client.get("nonexistent_endpoint")
 except UnauthorizedError:
-    print("Invalid credentials.")
-except NotFoundError:
-    print("Endpoint not found.")
+    print("Invalid credentials. Please re-authenticate.")
+except ForbiddenError:
+    print("Resource access is forbidden.")
+```
+
+### API Responses
+Responses are encapsulated in an `APIResponse` class for easy access:
+
+```python
+response = product.list()
+
+# Convert response to JSON
+response_json = response.to_json()
+
+# Access pagination details
+pagination = response.get_pagination()
+print(pagination["totalPages"])
+
+# Iterate through response items
+for item in response:
+    print(item.title)
 ```
 
 ## Project Structure
-```
+```aiignore
 evance_api/ 
- ├── __init__.py
- ├── auth.py # Handles API authentication 
- ├── client.py # Client for making API requests 
- ├── exceptions.py # Custom exceptions for API errors 
- ├── resources/ 
- │ ├── __init__.py 
- │ ├── products.py # Products resource 
- │ └── contacts.py # Contacts resource 
- ├── response.py # Handles API response parsing and pagination 
- ├──tests/ 
- │ ├── test_auth.py # Unit tests for the authentication module 
- │ └── test_client.py # Unit tests for the client module 
- ├── requirements.txt # Project dependencies 
- └── setup.py # Project setup configuration
+├── __init__.py 
+├── auth.py # Handles API authentication 
+├── client.py # Client for making API requests 
+├── exceptions.py # Custom exceptions for API errors 
+├── response.py # Parses API responses 
+├── resources/ 
+│ ├── __init__.py 
+│ ├── products.py # Products resource 
+│ └── contacts.py # Contacts resource 
+├── tests/ 
+│ ├── test_auth.py # Unit tests for authentication module 
+│ └── test_client.py # Unit tests for client module 
+├── setup.py # Project setup configuration 
+├── requirements.txt # Project dependencies 
+├── readme.md # Project documentation
+└── LICENSE # Project license details
+```
+
+
+## Validator Utility
+The library includes a `Validator` class that enforces dynamic parameter validation for API queries. Example:
+
+```python
+from evance_api.resources.products import Products
+
+product = Products(client)
+
+# Dynamically set and validate query parameters
+product.set("sku:contains", "1234")
+response = product.list()
 ```
 
 ## Testing
-Run unit tests with:
+Run unit tests with `unittest`:
 
 ```bash
 python -m unittest discover tests
 ```
 
 ## License
-This project is licensed under the **MIT License**.
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
+
+---
+
+## Acknowledgments
+- [Requests Library](https://docs.python-requests.org) for handling HTTP requests.
+- [PyJWT](https://pyjwt.readthedocs.io) for handling authentication tokens.

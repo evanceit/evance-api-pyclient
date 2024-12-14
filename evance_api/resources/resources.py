@@ -175,11 +175,17 @@ class Resources:
             raise ValueError(f"Parameter '{key}' must be of type {expected_type.__name__}")
         self.query_params[key] = value
 
-    def list(self) -> APIResponse:
+    def list(self, params=None) -> APIResponse:
         """
         Retrieve a list of items for this resource.
         """
-        response = self.client.get(f"{self.resource_name}.json", params=self.query_params)
+        if params is None:
+            params = {}
+
+        query_params = self.query_params.copy()
+        query_params.update(params)
+
+        response = self.client.get(f"{self.resource_name}.json", params=query_params)
         return APIResponse(response)
 
     def one(self, resource_id) -> APIResponse:
