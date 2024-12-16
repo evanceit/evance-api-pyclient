@@ -231,11 +231,11 @@ class Resources:
         response = self.client.put(f"{self.resource_name}/{resource_id}.json", json=body)
         return APIResponse(response)
 
-    def delete(self, resource_id) -> APIResponse:
+    def delete(self, resource_id) -> bool:
         """
         Delete a resource (DELETE).
 
         :param resource_id: The ID of the resource to delete
         """
         response = self.client.delete(f"{self.resource_name}/{resource_id}.json")
-        return APIResponse(response)
+        return response

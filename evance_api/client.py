@@ -57,6 +57,8 @@ class EvanceClient:
                     verify=True
                 )
 
+            if response.status_code == 204:  # No Content
+                return True  # Successfully handled no content case
             response.raise_for_status()
             return response.json()
 
@@ -85,7 +87,7 @@ class EvanceClient:
             raise TimeoutError() from timeout_err
 
         except requests.exceptions.RequestException as req_err:
-            raise UnexpectedError(f"An unexpected error occurred: {req_err}") from req_err
+            raise UnexpectedError(f"An unexpected error occurred: {response.status_code}: {req_err}") from req_err
 
     def get(self, endpoint, params=None):
         return self.request("GET", endpoint, params=params)
