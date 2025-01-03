@@ -12,11 +12,38 @@ The **Evance API Python Client** is a library designed to interact with the Evan
 - Extensible design for additional resources
 - Response parsing with support for JSON handling and dot notation access
 
-## Installation
-To install the dependencies needed for this project, run:
+## Setup
+### Installation
+You can install this library either locally, from a GitHub repository, or from PyPI (if published). Use one of the following methods to set it up:
 
+#### 1. **Install Locally from Source**
+   Clone the repository or download the source code, then run:
+   ```bash
+   pip install .
+   ```
+
+#### 2. **Install from GitHub**
+   Install directly from the GitHub repository (if public):
+   ```bash
+   pip install git+https://github.com/evanceit/evance-api-pyclient.git
+   ```
+
+#### 3. **Install from PyPI**
+   If the package is published on PyPI, use:
+   ```bash
+   pip install evance_api_pyclient
+   ```
+
+### Dependencies
+This project uses the following dependencies as listed in `requirements.txt`. To install them manually, use:
 ```bash
 pip install -r requirements.txt
+```
+
+### Verifying Installation
+After installation, verify the package with the following command:
+```bash
+python -c "import evance_api_pyclient; print('Package installed successfully')"
 ```
 
 ## Usage

@@ -8,7 +8,13 @@ setup(
     author_email="info@azexis.com",
     url="https://github.com/evanceit/evance-api-pyclient",
     packages=find_packages(),
-    install_requires=["requests"],
+    install_requires= [
+        "setuptools==75.6.0",
+        "twine==6.0.1",
+        "requests~=2.32.3",
+        "jwt==1.3.1",
+        "urllib3~=2.2.3",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
