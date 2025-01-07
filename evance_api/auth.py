@@ -69,7 +69,7 @@ class EvanceAuth:
                 response = session.send(prepared_request, verify=False)
         else:
             response = session.send(prepared_request, verify=True)
-        print(response.text)
+
         response.raise_for_status()
         self.token = response.json().get("access_token")
 
