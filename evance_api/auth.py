@@ -24,24 +24,22 @@ class EvanceAuth:
         self.base_url = base_url
         self.token = None
 
-    @classmethod
-    def from_json(cls, json_file_path, debug_mode=False):
+    def from_json(self, json_file_path):
         """
         Create an EvanceAuth instance from a JSON file.
 
+        :param debug_mode:
         :param json_file_path: Path to the JSON file containing authentication details
         :return: An instance of EvanceAuth
         """
         with open(json_file_path, "r") as file:
             credentials = json.load(file)
 
-        return cls(
-            account=credentials["account"],
-            client_id=credentials["client_id"],
-            private_key=credentials["private_key"],
-            algorithm=credentials.get("algorithm", "HS256"),
-            debug_mode=debug_mode,
-        )
+
+        self.account=credentials["account"],
+        self.client_id=credentials["client_id"],
+        self.private_key=credentials["private_key"],
+        self.algorithm=credentials.get("algorithm", "HS256")
 
     def authenticate(self):
         """
@@ -71,7 +69,7 @@ class EvanceAuth:
                 response = session.send(prepared_request, verify=False)
         else:
             response = session.send(prepared_request, verify=True)
-
+        print(response.text)
         response.raise_for_status()
         self.token = response.json().get("access_token")
 
