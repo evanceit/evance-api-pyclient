@@ -5,7 +5,7 @@ from urllib3.exceptions import InsecureRequestWarning
 
 
 class EvanceAuth:
-    def __init__(self, account=None, client_id=None, private_key=None, algorithm="HS256", base_url="https://api.evance.com", debug_mode=False):
+    def __init__(self, base_url, account=None, client_id=None, private_key=None, algorithm="HS256", debug_mode=False):
         """
         Initialize the authentication module.
 
@@ -40,7 +40,6 @@ class EvanceAuth:
             client_id=credentials["client_id"],
             private_key=credentials["private_key"],
             algorithm=credentials.get("algorithm", "HS256"),
-            base_url="https://"+credentials.get("account", "https://api.evance.com"),
             debug_mode=debug_mode,
         )
 
@@ -48,31 +47,30 @@ class EvanceAuth:
         """
         Authenticate with the Evance API and store the token.
         """
+        url = f"{self.base_url}/oauth/token"
 
-        url=f"{self.base_url}/oauth/token"
-
-        data={
+        data = {
             "client_id": self.client_id,
             "client_secret": self.private_key,
             "grant_type": "client_credentials",
         }
 
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        # Create a Prepared Request to inspect headers
+        session = requests.Session()
+        req = requests.Request("POST", url, data=data, headers=headers)
+        prepared_request = session.prepare_request(req)
 
         # Suppress InsecureRequestWarning when debug_mode is enabled
         if self.debug_mode:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", InsecureRequestWarning)
-                response = requests.post(
-                    url=url,
-                    data=data,
-                    verify=False
-                )
+                response = session.send(prepared_request, verify=False)
         else:
-            response = requests.post(
-                url=url,
-                data=data,
-                verify=True
-            )
+            response = session.send(prepared_request, verify=True)
 
         response.raise_for_status()
         self.token = response.json().get("access_token")

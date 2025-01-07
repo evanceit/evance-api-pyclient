@@ -11,7 +11,7 @@ auth.authenticate()
 client = EvanceClient(auth, "v2")
 product = Products(client)
 contact = Contacts(client)
-
+exit()
 # Example: Fetch a list of products
 product.set("limit",5)
 product.set("page", 2)
