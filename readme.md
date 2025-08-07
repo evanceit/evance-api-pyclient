@@ -47,11 +47,29 @@ python -c "import evance_api_pyclient; print('Package installed successfully')"
 ```
 
 ## Usage
+### Optimized Imports
+The library now supports optimized imports, allowing you to import classes directly from the main package:
+
+```python
+# Before optimization:
+# from evance_api.auth import EvanceAuth
+# from evance_api.client import EvanceClient
+# from evance_api.resources.product import Downloads
+# from evance_api.resources.products import Products
+# from evance_api.resources.product import Specifications
+# from evance_api.resources.contacts import Contacts
+
+# After optimization - all key classes are available directly from the package:
+from evance_api import EvanceAuth, EvanceClient
+from evance_api import Resources, Products, Contacts
+from evance_api import Downloads, Specifications
+```
+
 ### Authentication
 Authenticate with the API using a JSON credentials file. Use debug mode to disable SSL verification.
 
 ```python
-from evance_api.auth import EvanceAuth
+from evance_api import EvanceAuth
 
 # Load credentials from a JSON file
 auth = EvanceAuth.from_json("credentials.json", debug_mode=True)
@@ -63,7 +81,7 @@ The API defaults to version 1 at the moment, however it is likely that v1 will n
 Set up the Evance Client to make API requests:
 
 ```python
-from evance_api.client import EvanceClient
+from evance_api import EvanceClient
 
 client = EvanceClient(auth, api_version="v2")
 ```
@@ -73,7 +91,7 @@ client = EvanceClient(auth, api_version="v2")
 Fetch and iterate through the list of products:
 
 ```python
-from evance_api.resources.product import Products
+from evance_api import Products
 
 product = Products(client)
 product.set("limit", 5)
@@ -88,7 +106,7 @@ for item in response:
 #### Contacts
 Fetch and iterate through the list of contacts:
 ```python
-from evance_api.resources.contacts import Contacts
+from evance_api import Contacts
 
 contact = Contacts(client)
 contact.set("email", "test@example.com")  # Query based on email address
@@ -108,6 +126,7 @@ for contact in response:
 Specific exceptions have been implemented to handle common HTTP errors:
 ```python
 from evance_api.exceptions import UnauthorizedError, ForbiddenError
+# Note: In future versions, these exceptions may also be available directly from the package
 
 try:
     client.get("nonexistent_endpoint")
@@ -161,7 +180,7 @@ evance_api/
 The library includes a `Validator` class that enforces dynamic parameter validation for API queries. Example:
 
 ```python
-from evance_api.resources.product import Products
+from evance_api import Products
 
 product = Products(client)
 
