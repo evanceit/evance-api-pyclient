@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="evance_api_pyclient",
-    version="0.1",
+    version="0.2",
     description="Python client for the Evance API",
     author="Kaito Jacobson",
     author_email="info@azexis.com",
