@@ -71,8 +71,9 @@ client = EvanceClient(auth, api_version="v2")
 ### Working with Resources
 #### Products
 Fetch and iterate through the list of products:
+
 ```python
-from evance_api.resources.products import Products
+from evance_api.resources.product import Products
 
 product = Products(client)
 product.set("limit", 5)
@@ -160,7 +161,7 @@ evance_api/
 The library includes a `Validator` class that enforces dynamic parameter validation for API queries. Example:
 
 ```python
-from evance_api.resources.products import Products
+from evance_api.resources.product import Products
 
 product = Products(client)
 

@@ -1,16 +1,22 @@
 from evance_api.auth import EvanceAuth
 from evance_api.client import EvanceClient
+from evance_api.resources.product import Downloads
 from evance_api.resources.products import Products
+from evance_api.resources.product import Specifications
 from evance_api.resources.contacts import Contacts
 
 # Load authentication details from the JSON file
-auth = EvanceAuth.from_json("akiba.json", True)
+auth = EvanceAuth(base_url="https://pickering.evance.me", debug_mode=True)
+auth.from_json("pickering.json")
 
 # Authenticate and create the client
 auth.authenticate()
 client = EvanceClient(auth, "v2")
-product = Products(client)
-contact = Contacts(client)
+product = Products(client).one(620313)
+specifications = Specifications(client, product.data.id).list()
+downloads = Downloads(client, product.data.id).list()
+print(downloads.to_json())
+#contact = Contacts(client)
 exit()
 # Example: Fetch a list of products
 product.set("limit",5)

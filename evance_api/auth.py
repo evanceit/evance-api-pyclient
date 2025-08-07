@@ -28,7 +28,7 @@ class EvanceAuth:
         """
         Create an EvanceAuth instance from a JSON file.
 
-        :param debug_mode:
+
         :param json_file_path: Path to the JSON file containing authentication details
         :return: An instance of EvanceAuth
         """
@@ -45,7 +45,7 @@ class EvanceAuth:
         """
         Authenticate with the Evance API and store the token.
         """
-        url = f"{self.base_url}/oauth/token"
+        url = f"{self.base_url}/admin/oauth/token"
 
         data = {
             "client_id": self.client_id,
